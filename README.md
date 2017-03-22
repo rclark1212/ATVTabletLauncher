@@ -10,6 +10,6 @@ Just uses a simple gridview to display list of apps to launch. App list generate
 
 Build and install. It should automatically pick up any sideloaded tablet or phone apps.
 
-Note that we do NOT support listening to dynamic installs (didn't put in a broadcast receiver). So apps sideloaded while this app is open won't show up until you restart the app.
+Update - added a broadcast receiver so now if you sideload install/uninstall while in the app, the new app will show up.
 
 This app also is not localized (there is an error message hardcoded in for when we can't launch).

@@ -1,13 +1,17 @@
 package com.example.rclark.atvtabletlauncher;
 
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
+import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.GridView;
@@ -15,7 +19,6 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created by rclark on 3/21/17.
@@ -34,6 +37,19 @@ public class MainActivity extends Activity {
 
     GridView mGrid = null;
     ArrayList<AppDetail> mApps = null;
+    public static final String PRIVATE_UPDATE = "com.example.rclark.atvtabletlauncher.BROADCAST";
+    public static final String TAG = "ATVTabletLauncher";
+
+    //We use broadcast intents to message back from Services to the init activity.
+    //Define our handler for this here.
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            //well, only one message so no parameters. Just go ahead and update UI here.
+            updateAppList();
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +75,28 @@ public class MainActivity extends Activity {
             //no apps...
             Toast.makeText(this, "No tablet apps found", Toast.LENGTH_LONG).show();
         }
+    }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        //Register receiver
+        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(PRIVATE_UPDATE));
+    }
+
+    @Override
+    public void onPause() {
+        //Unregister receiver
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
+
+        super.onPause();
+    }
+
+    void updateAppList() {
+        Log.d(TAG, "Got an update event");
+        mApps = loadApps(exclusion_list);
+        mGrid.setAdapter(new GridAdapter(this, mApps));
     }
 
     void launchApp(AppDetail app) {
